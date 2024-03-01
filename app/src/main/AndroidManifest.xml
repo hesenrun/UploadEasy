@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" >
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission
+        android:name="android.permission.READ_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.WRITE_EXTERNAL_STORAGE"
+        android:maxSdkVersion="32" />
+    <uses-permission
+        android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <application
+        android:name=".base.App"
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.UploadEasy"
+        tools:targetApi="31" >
+        <activity
+            android:name=".ui.activity.v50.V50Activity"
+            android:exported="false"
+            android:label="疯狂星期四v我50"
+            android:theme="@style/Theme.Material3.DayNight.Dialog.Alert" />
+        <activity
+            android:name=".ui.activity.about.AboutActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.guide.GuideActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activity.change.ChangeTimeoutActivity"
+            android:exported="false"
+            android:label="修改超时"
+            android:theme="@style/Theme.Material3.DayNight.Dialog.Alert" />
+        <activity
+            android:name=".ui.activity.change.ChangePortActivity"
+            android:exported="false"
+            android:label="修改端口"
+            android:theme="@style/Theme.Material3.DayNight.Dialog.Alert" />
+        <activity
+            android:name=".MainActivity"
+            android:exported="true" >
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <service
+            android:name=".service.HttpdService"
+            android:enabled="true"
+            android:exported="false" />
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true" >
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+    </application>
+
+</manifest>
