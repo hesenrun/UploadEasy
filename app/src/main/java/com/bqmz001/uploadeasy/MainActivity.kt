@@ -1,11 +1,14 @@
 package com.bqmz001.uploadeasy
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.net.Uri
 import android.os.Build
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.os.Environment
+import android.provider.Settings
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.navigation.findNavController
@@ -30,10 +33,31 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (result.resultCode == RESULT_OK) {
                 restartApp(application)
-            }else if (result.resultCode== RESULT_CANCELED){
+            } else if (result.resultCode == RESULT_CANCELED) {
                 startFailHint()
             }
         }
+
+    @SuppressLint("NewApi")
+    val permissionRequestDataLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (Environment.isExternalStorageManager()) {
+                Toast.makeText(this@MainActivity, "授权成功", Toast.LENGTH_SHORT).show()
+            }else{
+                MaterialAlertDialogBuilder(this)
+                    .setCancelable(false)
+                    .setTitle("权限提醒")
+                    .setMessage("没有获取到授权会导致体验不佳，确定继续？")
+                    .setPositiveButton("爷不玩了") { dialog, which ->
+                        finish()
+                    }
+                    .setNegativeButton("就图一乐") { dialog, which ->
+                        dialog.dismiss()
+                    }
+                    .show()
+            }
+        }
+
 
     override fun initEmptyData() {
 
@@ -52,28 +76,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 .setMessage("貌似没有获取存储权限，但这个APP没有存储权限就没法保存上传的文件，还得大哥们高抬贵手点个授权啊")
                 .setCancelable(false)
                 .setPositiveButton("确定授权") { dialog, which ->
-                    PermissionX.init(this)
-                        .permissions(getStoragePermission())
-                        .request { allGranted, grantedList, deniedList ->
-                            if (allGranted) {
-                                Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show()
-                                startService(Intent(this@MainActivity, HttpdService::class.java))
-                            } else {
-                                MaterialAlertDialogBuilder(this)
-                                    .setCancelable(false)
-                                    .setTitle("权限提醒")
-                                    .setMessage("没有获取到授权会导致体验不佳，确定继续？")
-                                    .setPositiveButton("爷不玩了") { dialog, which ->
-                                        finish()
-                                    }
-                                    .setNegativeButton("就图一乐") { dialog, which ->
-                                        dialog.dismiss()
-                                    }
-                                    .show()
-
-
-                            }
-                        }
+                    requestStoragePermission()
                 }
                 .setNegativeButton("不授权，我就先看看") { dialog, which ->
                     dialog.dismiss()
@@ -102,7 +105,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         }
     }
 
-    fun unknownHint(){
+    fun unknownHint() {
         MaterialAlertDialogBuilder(this)
             .setCancelable(false)
             .setTitle("启动失败")
@@ -113,7 +116,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
             .show()
     }
 
-    fun startFailHint(){
+    fun startFailHint() {
         MaterialAlertDialogBuilder(this)
             .setCancelable(false)
             .setTitle("启动失败")
@@ -142,7 +145,10 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
 
     private fun checkStoragePermission(): Boolean {
         return if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            PermissionX.isGranted(this, Manifest.permission.MANAGE_EXTERNAL_STORAGE)|| Environment.isExternalStorageManager()
+            PermissionX.isGranted(
+                this,
+                Manifest.permission.MANAGE_EXTERNAL_STORAGE
+            ) || Environment.isExternalStorageManager()
         } else {
             PermissionX.isGranted(this, Manifest.permission.WRITE_EXTERNAL_STORAGE)
         }
@@ -158,6 +164,37 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE
             )
+        }
+    }
+
+    fun requestStoragePermission() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            val newIntent =  Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION);
+            newIntent.setData(Uri.parse("package:" + packageName));
+            permissionRequestDataLauncher.launch(newIntent)
+        } else {
+            PermissionX.init(this)
+                .permissions(getStoragePermission())
+                .request { allGranted, grantedList, deniedList ->
+                    if (allGranted) {
+                        Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show()
+                        startService(Intent(this@MainActivity, HttpdService::class.java))
+                    } else {
+                        MaterialAlertDialogBuilder(this)
+                            .setCancelable(false)
+                            .setTitle("权限提醒")
+                            .setMessage("没有获取到授权会导致体验不佳，确定继续？")
+                            .setPositiveButton("爷不玩了") { dialog, which ->
+                                finish()
+                            }
+                            .setNegativeButton("就图一乐") { dialog, which ->
+                                dialog.dismiss()
+                            }
+                            .show()
+
+
+                    }
+                }
         }
     }
 
