@@ -43,6 +43,7 @@ class MainActivity : BaseActivity<ActivityMainBinding>() {
         registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
             if (Environment.isExternalStorageManager()) {
                 Toast.makeText(this@MainActivity, "授权成功", Toast.LENGTH_SHORT).show()
+                startService(Intent(this@MainActivity, HttpdService::class.java))
             }else{
                 MaterialAlertDialogBuilder(this)
                     .setCancelable(false)

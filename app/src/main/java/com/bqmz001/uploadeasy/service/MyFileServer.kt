@@ -14,6 +14,8 @@ class MyFileServer(private val context: Context, port: Int) : NanoHTTPD(port) {
     override fun serve(session: IHTTPSession?): Response {
         if (session != null) {
             printSessionInfo(session)
+            val ct = ContentType(session.headers["content-type"]).tryUTF8()
+            session.headers["content-type"] = ct.contentTypeHeader
             if (!session.remoteIpAddress.startsWith("192")) {
                 return return405()
             }
